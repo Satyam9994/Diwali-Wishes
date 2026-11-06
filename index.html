@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deepavali Wishes | Festival of Lights</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Cinzel Decorative, Great Vibes & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Great+Vibes&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Three.js CDN for 3D Background Visuals -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            script: ['Great Vibes', 'cursive'],
+            festive: ['Cinzel Decorative', 'serif'],
+          },
+          colors: {
+            gold: {
+              300: '#ffe58f',
+              400: '#ffd666',
+              500: '#faad14',
+              600: '#d48806',
+              glow: '#ff9900',
+            }
+          },
+          animation: {
+            'flame-flicker': 'flame 0.12s infinite alternate ease-in-out',
+            'float-slow': 'floatCard 6s ease-in-out infinite',
+            'gold-shimmer': 'shimmer 3s ease-in-out infinite alternate',
+            'pulse-glow': 'pulseGlow 2s infinite',
+          },
+          keyframes: {
+            flame: {
+              '0%': { transform: 'scale(1) skewX(-1.5deg)', filter: 'drop-shadow(0 0 10px #ff9900)' },
+              '100%': { transform: 'scale(1.15, 1.25) skewX(2deg)', filter: 'drop-shadow(0 0 25px #ff5500)' },
+            },
+            floatCard: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-8px)' },
+            },
+            shimmer: {
+              '0%': { opacity: '0.8', filter: 'drop-shadow(0 0 8px rgba(250, 173, 20, 0.4))' },
+              '100%': { opacity: '1', filter: 'drop-shadow(0 0 28px rgba(255, 153, 0, 0.8))' },
+            },
+            pulseGlow: {
+              '0%, 100%': { boxShadow: '0 0 20px rgba(250, 173, 20, 0.4)' },
+              '50%': { boxShadow: '0 0 35px rgba(255, 115, 0, 0.8)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Pure dark deep canvas background */
+    body {
+      background-color: #050507;
+      background-image: radial-gradient(circle at 50% 25%, rgba(45, 25, 4, 0.35) 0%, #050507 80%);
+      cursor: crosshair;
+    }
+
+    #webgl3dCanvas, #fireworksCanvas, #sparklerCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+    }
+
+    #webgl3dCanvas { z-index: 4; }
+    #fireworksCanvas { z-index: 10; }
+    #sparklerCanvas { z-index: 25; }
+
+    /* Diya Flame */
+    .diya-flame {
+      position: absolute;
+      top: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 16px;
+      height: 26px;
+      background: radial-gradient(circle, #ffffff 15%, #ffe58f 35%, #faad14 65%, #d4380d 100%);
+      border-radius: 50% 50% 35% 35% / 70% 70% 40% 40%;
+      transform-origin: center bottom;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .diya-flame.unlit {
+      opacity: 0;
+      transform: translateX(-50%) scale(0.1);
+    }
+
+    .flame-halo {
+      position: absolute;
+      top: -36px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 214, 102, 0.5) 0%, rgba(250, 140, 22, 0.15) 55%, transparent 75%);
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .flame-halo.unlit { opacity: 0; }
+
+    /* Golden text gradient */
+    .text-gold-gradient {
+      background: linear-gradient(135deg, #fff7cc 0%, #ffd666 40%, #faad14 70%, #d48806 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Glass card border */
+    .gold-glass-card {
+      background: rgba(13, 12, 18, 0.88);
+      border: 1px solid rgba(250, 173, 20, 0.38);
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.95), 0 0 35px rgba(250, 173, 20, 0.15), inset 0 0 25px rgba(250, 173, 20, 0.05);
+    }
+
+    /* Custom grand finale button style */
+    .btn-grand-finale {
+      background: linear-gradient(135deg, #ff4d4f 0%, #faad14 50%, #ff7a45 100%);
+      background-size: 200% 200%;
+      animation: gradientShift 3s ease infinite;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen text-amber-50 selection:bg-amber-500 selection:text-black overflow-x-hidden relative flex flex-col justify-between">
+  <!-- Three.js 3D Background Canvas -->
+  <canvas id="webgl3dCanvas"></canvas>
+  <!-- Fireworks Fullscreen Canvas -->
+  <canvas id="fireworksCanvas"></canvas>
+  <!-- Sparkler Cursor Embers Canvas -->
+  <canvas id="sparklerCanvas"></canvas>
+
+  <!-- Top Floating Controls -->
+  <nav class="fixed top-4 right-4 z-40 flex items-center space-x-2">
+    <!-- Grand Finale Button -->
+    <button id="grandFinaleBtn" onclick="triggerGrandFinale()" class="btn-grand-finale animate-pulse-glow px-4 py-2 rounded-full text-black font-bold text-xs sm:text-sm tracking-wide shadow-lg hover:scale-105 active:scale-95 transition flex items-center gap-2">
+      <i data-lucide="flame" class="w-4 h-4 fill-black"></i>
+      <span>Grand Finale (1000-Ladi)</span>
+    </button>
+
+    <!-- Sound Toggle Button -->
+    <button id="soundToggleBtn" onclick="toggleAudio()" class="px-3.5 py-2 rounded-full bg-black/60 backdrop-blur-md border border-amber-500/30 text-amber-300 text-xs sm:text-sm font-medium hover:border-amber-400 hover:text-white transition flex items-center gap-1.5 shadow-lg">
+      <i data-lucide="volume-2" id="soundIcon" class="w-4 h-4 text-amber-400"></i>
+      <span id="soundText">Sound ON</span>
+    </button>
+  </nav>
+
+  <!-- Notification Hint Bar (Click Anywhere) -->
+  <!-- <div class="fixed top-4 left-4 z-40 hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/60 border border-amber-500/20 text-[11px] text-amber-200/80 backdrop-blur-md pointer-events-none">
+    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400 animate-spin" style="animation-duration: 4s;"></i>
+    <span>Move mouse for Phuljhadi • Click to burst sky crackers</span>
+  </div> -->
+
+  <!-- Center Main Container -->
+  <main class="relative z-30 flex-1 flex items-center justify-center p-4 sm:p-6 w-full max-w-4xl mx-auto">
+
+    <!-- STEP 1: INITIAL NAME INPUT MODAL / CARD -->
+    <div id="stepInputCard" class="w-full max-w-md gold-glass-card rounded-3xl p-6 sm:p-9 text-center backdrop-blur-2xl transition-all duration-500 scale-100 opacity-100">
+      <!-- Diya Icon Header -->
+      <div class="relative w-16 h-16 mx-auto mb-4 flex items-end justify-center cursor-pointer group" onclick="toggleInteractiveDiya(this, event)" title="Click to blow or relight diya!">
+        <div class="flame-halo animate-ping" style="animation-duration: 3s;"></div>
+        <div class="diya-flame animate-flame-flicker"></div>
+        <svg class="w-14 h-9" viewBox="0 0 100 60">
+          <path d="M10,25 Q50,60 90,25 Q95,45 50,55 Q5,45 10,25 Z" fill="#8c3b12" stroke="#faad14" stroke-width="2"/>
+          <ellipse cx="50" cy="25" rx="40" ry="10" fill="#4a1805"/>
+          <ellipse cx="50" cy="25" rx="30" ry="6" fill="#faad14" opacity="0.9"/>
+        </svg>
+      </div>
+
+      <span class="text-[11px] tracking-[0.25em] uppercase text-amber-400 font-semibold">Festival of Eternal Lights</span>
+      <h1 class="text-3xl sm:text-4xl font-festive font-black text-gold-gradient mt-1 mb-2">
+        दीपावली पर्व
+      </h1>
+      <p class="text-xs sm:text-sm text-neutral-400 mb-6 font-light leading-relaxed">
+        Light up this sacred night with glowing diyas, sparkler trails, and dazzling sky bursts. Please enter your name to reveal your greeting.
+      </p>
+
+      <form onsubmit="handleStartCelebration(event)" class="space-y-5">
+        <div class="text-left">
+          <label class="block text-xs uppercase tracking-wider text-amber-300/80 mb-1.5 font-medium pl-1">Your Name</label>
+          <div class="relative">
+            <i data-lucide="user" class="w-4 h-4 text-amber-400/80 absolute left-3.5 top-3.5"></i>
+            <input 
+              type="text" 
+              id="userNameInput" 
+              placeholder="Enter your name..." 
+              maxlength="35"
+              required
+              autocomplete="name"
+              class="w-full pl-10 pr-4 py-3 bg-black/70 border border-amber-500/40 rounded-2xl text-amber-100 placeholder-neutral-600 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 text-sm transition"
+            />
+          </div>
+        </div>
+
+        <button 
+          type="submit" 
+          class="w-full mt-2 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-bold text-sm tracking-wide shadow-[0_0_25px_rgba(250,173,20,0.4)] hover:shadow-[0_0_35px_rgba(250,173,20,0.6)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+          <i data-lucide="sparkles" class="w-4 h-4 text-black"></i>
+          <span>Open Festive Greeting</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- STEP 2: CENTERED GREETING CARD (Revealed after submission) -->
+    <div id="stepGreetingCard" class="hidden w-full max-w-xl gold-glass-card rounded-3xl p-6 sm:p-10 text-center backdrop-blur-2xl transition-all duration-700 animate-float-slow relative overflow-hidden">
+      <!-- Subtle Golden Corners -->
+      <div class="absolute top-2 left-2 text-amber-400/25 pointer-events-none">
+        <svg width="45" height="45" viewBox="0 0 100 100" fill="currentColor"><path d="M0,0 L100,0 C60,10 40,30 30,50 C20,70 10,90 0,100 Z"/></svg>
+      </div>
+      <div class="absolute top-2 right-2 text-amber-400/25 pointer-events-none" style="transform: rotate(90deg)">
+        <svg width="45" height="45" viewBox="0 0 100 100" fill="currentColor"><path d="M0,0 L100,0 C60,10 40,30 30,50 C20,70 10,90 0,100 Z"/></svg>
+      </div>
+      <div class="absolute bottom-2 left-2 text-amber-400/25 pointer-events-none" style="transform: rotate(-90deg)">
+        <svg width="45" height="45" viewBox="0 0 100 100" fill="currentColor"><path d="M0,0 L100,0 C60,10 40,30 30,50 C20,70 10,90 0,100 Z"/></svg>
+      </div>
+      <div class="absolute bottom-2 right-2 text-amber-400/25 pointer-events-none" style="transform: rotate(180deg)">
+        <svg width="45" height="45" viewBox="0 0 100 100" fill="currentColor"><path d="M0,0 L100,0 C60,10 40,30 30,50 C20,70 10,90 0,100 Z"/></svg>
+      </div>
+
+      <!-- Golden Hanging Diyas Decor Row (Clickable Interactive Lamps) -->
+      <div class="flex items-center justify-center gap-6 sm:gap-8 mb-4">
+        <!-- Diya 1 (Interactive) -->
+        <div class="relative w-12 h-12 flex items-end justify-center cursor-pointer transition hover:scale-110 active:scale-95" onclick="toggleInteractiveDiya(this, event)" title="Tap to blow out or light the diya!">
+          <div class="flame-halo"></div>
+          <div class="diya-flame animate-flame-flicker"></div>
+          <svg class="w-10 h-7" viewBox="0 0 100 60">
+            <path d="M10,25 Q50,60 90,25 Q95,45 50,55 Q5,45 10,25 Z" fill="#8c3b12" stroke="#faad14" stroke-width="2"/>
+            <ellipse cx="50" cy="25" rx="30" ry="6" fill="#faad14" opacity="0.9"/>
+          </svg>
+        </div>
+
+        <!-- Center Om / Emblem -->
+        <div class="px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold uppercase tracking-widest flex items-center gap-1.5 shadow-[0_0_15px_rgba(250,173,20,0.2)]">
+          <span>✨</span>
+          <span>शुभ दीपावली</span>
+          <span>✨</span>
+        </div>
+
+        <!-- Diya 2 (Interactive) -->
+        <div class="relative w-12 h-12 flex items-end justify-center cursor-pointer transition hover:scale-110 active:scale-95" onclick="toggleInteractiveDiya(this, event)" title="Tap to blow out or light the diya!">
+          <div class="flame-halo"></div>
+          <div class="diya-flame animate-flame-flicker"></div>
+          <svg class="w-10 h-7" viewBox="0 0 100 60">
+            <path d="M10,25 Q50,60 90,25 Q95,45 50,55 Q5,45 10,25 Z" fill="#8c3b12" stroke="#faad14" stroke-width="2"/>
+            <ellipse cx="50" cy="25" rx="30" ry="6" fill="#faad14" opacity="0.9"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Personalized Heading -->
+      <h2 id="cardTitle" class="text-3xl sm:text-5xl font-script text-amber-300 drop-shadow-[0_2px_15px_rgba(250,173,20,0.6)]">
+        Happy Diwali! ✨
+      </h2>
+
+      <!-- Sanskrit & Blessing Body -->
+      <div class="my-5 py-4 border-y border-amber-500/20 space-y-2 relative">
+        <p class="text-xs uppercase tracking-widest text-amber-400 font-festive">
+          तमसो मा ज्योतिर्गमय • शुभ दीपावली
+        </p>
+        <p id="cardBlessingText" class="text-sm sm:text-base text-neutral-300 font-light leading-relaxed italic px-2 transition-opacity duration-300">
+          May the divine glow of millions of diyas illuminate your path to prosperity, happiness, and peace. Wishing you and your loved ones a joyful, safe, and sparkling Festival of Lights!
+        </p>
+
+        <!-- Change Blessing Button -->
+        <button onclick="shuffleBlessing(event)" class="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-[11px] font-medium border border-amber-500/20 transition hover:border-amber-400">
+          <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+          <span>Shuffle Blessing</span>
+        </button>
+      </div>
+
+      <!-- Permanent Signature -->
+      <div class="mt-4 pt-2 border-t border-amber-500/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+        <div>
+          <span class="text-[11px] uppercase tracking-widest text-neutral-400 font-medium">Warmest Wishes From</span>
+          <p class="text-base sm:text-xl font-festive text-gold-gradient font-bold tracking-wide">
+            Satyam kumar Yadav
+          </p>
+        </div>
+
+        <!-- Quick Share / Copy URL button -->
+        <!-- <button onclick="copyPersonalizedLink(event)" class="px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/30 border border-amber-500/40 text-amber-200 text-xs font-medium transition flex items-center gap-1.5 active:scale-95 shadow-md">
+          <i data-lucide="share-2" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span>Share Link</span>
+        </button> -->
+      </div>
+    </div>
+  </main>
+
+  <!-- Dark Footer Note -->
+  <footer class="relative z-30 pb-4 text-center text-[11px] text-neutral-500 tracking-wider">
+    <p>May Light Triumph Over Darkness • Click anywhere on screen to burst firecrackers</p>
+  </footer>
+
+  <!-- Toast Notification -->
+  <div id="toastMessage" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transform translate-y-24 opacity-0 pointer-events-none transition-all duration-300 bg-amber-400 text-black px-4 py-2 rounded-full font-medium text-xs sm:text-sm shadow-2xl flex items-center gap-2">
+    <i data-lucide="check-circle" class="w-4 h-4"></i>
+    <span id="toastText">Link copied!</span>
+  </div>
+
+  <script>
+    /* -------------------------------------------------------------
+     * 1. WEB AUDIO API SYNTHESIZER (ZERO EXTERNAL AUDIO FILES)
+     * ------------------------------------------------------------- */
+    let audioCtx = null;
+    let soundEnabled = true;
+    let isCelebrationUnlocked = false; // Locked until user enters their name
+    let lastToastTime = 0;
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function toggleAudio() {
+      initAudio();
+      soundEnabled = !soundEnabled;
+      const icon = document.getElementById('soundIcon');
+      const text = document.getElementById('soundText');
+      if (soundEnabled) {
+        icon.setAttribute('data-lucide', 'volume-2');
+        text.innerText = 'Sound ON';
+        showToast('Sound enabled 💥');
+      } else {
+        icon.setAttribute('data-lucide', 'volume-x');
+        text.innerText = 'Sound OFF';
+        showToast('Sound muted');
+      }
+      lucide.createIcons();
+    }
+
+    // Audio synthesizer with customized sonic signatures per cracker type
+    function playCrackerAudio(type = 'peony') {
+      if (!soundEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      const now = audioCtx.currentTime;
+
+      // 1. Launch Whistle
+      const osc = audioCtx.createOscillator();
+      const oscGain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(320, now);
+      osc.frequency.exponentialRampToValueAtTime(1400, now + 0.08);
+
+      oscGain.gain.setValueAtTime(0.07, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+      osc.connect(oscGain);
+      oscGain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.09);
+
+      // 2. Explosion Boom - tailored depth based on type
+      const isHeavy = (type === 'heart' || type === 'peony');
+      const duration = isHeavy ? 0.5 : 0.35;
+      const bufferSize = Math.floor(audioCtx.sampleRate * duration);
+      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+
+      const whiteNoise = audioCtx.createBufferSource();
+      whiteNoise.buffer = buffer;
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(isHeavy ? 1100 : 800, now + 0.06);
+      filter.frequency.exponentialRampToValueAtTime(45, now + duration);
+
+      const boomGain = audioCtx.createGain();
+      boomGain.gain.setValueAtTime(isHeavy ? 0.75 : 0.5, now + 0.06);
+      boomGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+      whiteNoise.connect(filter);
+      filter.connect(boomGain);
+      boomGain.connect(audioCtx.destination);
+
+      whiteNoise.start(now + 0.06);
+      whiteNoise.stop(now + duration + 0.02);
+
+      // 3. Crackling embers / High sizzle pops
+      const popCount = type === 'palm' ? 9 : (type === 'willow' ? 8 : 4);
+      for (let i = 0; i < popCount; i++) {
+        const popTime = now + 0.12 + Math.random() * (type === 'willow' ? 0.45 : 0.25);
+        const popOsc = audioCtx.createOscillator();
+        const popGain = audioCtx.createGain();
+        popOsc.type = 'sawtooth';
+        popOsc.frequency.setValueAtTime(1600 + Math.random() * 1500, popTime);
+
+        popGain.gain.setValueAtTime(0.12, popTime);
+        popGain.gain.exponentialRampToValueAtTime(0.001, popTime + 0.035);
+
+        popOsc.connect(popGain);
+        popGain.connect(audioCtx.destination);
+        popOsc.start(popTime);
+        popOsc.stop(popTime + 0.04);
+      }
+    }
+
+    // Diya match-strike sound
+    function playDiyaSound() {
+      if (!soundEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, now);
+      osc.frequency.exponentialRampToValueAtTime(300, now + 0.15);
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.16);
+    }
+
+    /* -------------------------------------------------------------
+     * 2. THREE.JS 3D SCENE: 3D RANGOLI, FLOATING LANTERNS & STARDUST
+     * ------------------------------------------------------------- */
+    let scene3d, camera3d, renderer3d;
+    let rangoliGroup, floatingLanterns = [], stardustParticles;
+    let mouse3dX = 0, mouse3dY = 0;
+
+    function init3DScene() {
+      const canvas3d = document.getElementById('webgl3dCanvas');
+      scene3d = new THREE.Scene();
+
+      // Atmospheric subtle fog to blend into deep dark canvas
+      scene3d.fog = new THREE.FogExp2(0x050507, 0.012);
+
+      camera3d = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera3d.position.z = 45;
+
+      renderer3d = new THREE.WebGLRenderer({ canvas: canvas3d, alpha: true, antialias: true });
+      renderer3d.setSize(window.innerWidth, window.innerHeight);
+      renderer3d.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      // Ambient & Festive Warm Lights
+      const ambientLight = new THREE.AmbientLight(0xffb84d, 1.2);
+      scene3d.add(ambientLight);
+
+      const centerLight = new THREE.PointLight(0xffa940, 2.8, 80);
+      centerLight.position.set(0, 0, 10);
+      scene3d.add(centerLight);
+
+      // --- 1. 3D Sacred Rotating Rangoli Mandala in the Background ---
+      rangoliGroup = new THREE.Group();
+      rangoliGroup.position.set(0, 2, -15);
+
+      const rings = [
+        { radius: 14, segments: 48, color: 0xffd666, speed: 0.003 },
+        { radius: 10, segments: 32, color: 0xffa940, speed: -0.005 },
+        { radius: 6.5, segments: 16, color: 0xffec3d, speed: 0.007 },
+        { radius: 3, segments: 8, color: 0xff7a45, speed: -0.009 }
+      ];
+
+      rings.forEach((ring) => {
+        const torusGeom = new THREE.TorusGeometry(ring.radius, 0.08, 8, ring.segments);
+        const torusMat = new THREE.MeshStandardMaterial({
+          color: ring.color,
+          roughness: 0.3,
+          metalness: 0.8,
+          wireframe: true,
+          emissive: ring.color,
+          emissiveIntensity: 0.3
+        });
+        const mesh = new THREE.Mesh(torusGeom, torusMat);
+        mesh.userData = { speed: ring.speed };
+        rangoliGroup.add(mesh);
+      });
+
+      // Mandala Petals around the rangoli
+      const petalGeom = new THREE.ConeGeometry(0.8, 3.2, 4);
+      const petalMat = new THREE.MeshStandardMaterial({
+        color: 0xfaad14,
+        roughness: 0.4,
+        metalness: 0.7,
+        emissive: 0xd46b08,
+        emissiveIntensity: 0.4
+      });
+
+      const petalCount = 12;
+      for (let i = 0; i < petalCount; i++) {
+        const angle = (i / petalCount) * Math.PI * 2;
+        const petal = new THREE.Mesh(petalGeom, petalMat);
+        petal.position.x = Math.cos(angle) * 10;
+        petal.position.y = Math.sin(angle) * 10;
+        petal.rotation.z = angle - Math.PI / 2;
+        rangoliGroup.add(petal);
+      }
+
+      scene3d.add(rangoliGroup);
+
+      // --- 2. 3D Floating Illuminated Sky Lanterns (Kandils) ---
+      const lanternGeom = new THREE.CylinderGeometry(1.2, 0.9, 2.2, 6);
+      const lanternMat = new THREE.MeshStandardMaterial({
+        color: 0xff7a45,
+        emissive: 0xffa940,
+        emissiveIntensity: 0.8,
+        roughness: 0.2,
+        transparent: true,
+        opacity: 0.85
+      });
+
+      for (let i = 0; i < 26; i++) {
+        const lantern = new THREE.Mesh(lanternGeom, lanternMat.clone());
+        lantern.position.set(
+          (Math.random() - 0.5) * 80,
+          (Math.random() - 0.5) * 70,
+          (Math.random() - 0.5) * 40 - 10
+        );
+        lantern.scale.setScalar(Math.random() * 0.7 + 0.6);
+        lantern.userData = {
+          speedY: Math.random() * 0.04 + 0.02,
+          swaySpeed: Math.random() * 0.02 + 0.01,
+          swayAngle: Math.random() * Math.PI * 2,
+          rotSpeed: (Math.random() - 0.5) * 0.015
+        };
+        scene3d.add(lantern);
+        floatingLanterns.push(lantern);
+      }
+
+      // --- 3. 3D Golden Stardust Aura Particles ---
+      const stardustCount = 380;
+      const stardustGeometry = new THREE.BufferGeometry();
+      const stardustPositions = new Float32Array(stardustCount * 3);
+
+      for (let i = 0; i < stardustCount * 3; i += 3) {
+        stardustPositions[i] = (Math.random() - 0.5) * 100;
+        stardustPositions[i + 1] = (Math.random() - 0.5) * 90;
+        stardustPositions[i + 2] = (Math.random() - 0.5) * 60;
+      }
+
+      stardustGeometry.setAttribute('position', new THREE.BufferAttribute(stardustPositions, 3));
+
+      const stardustMaterial = new THREE.PointsMaterial({
+        color: 0xffd666,
+        size: 0.45,
+        transparent: true,
+        opacity: 0.75,
+        blending: THREE.AdditiveBlending
+      });
+
+      stardustParticles = new THREE.Points(stardustGeometry, stardustMaterial);
+      scene3d.add(stardustParticles);
+
+      // Track mouse for 3D Camera Parallax
+      window.addEventListener('mousemove', (e) => {
+        mouse3dX = (e.clientX / window.innerWidth - 0.5) * 2;
+        mouse3dY = (e.clientY / window.innerHeight - 0.5) * 2;
+      });
+
+      window.addEventListener('resize', onWindowResize3D);
+    }
+
+    function onWindowResize3D() {
+      if (!camera3d || !renderer3d) return;
+      camera3d.aspect = window.innerWidth / window.innerHeight;
+      camera3d.updateProjectionMatrix();
+      renderer3d.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function animate3D() {
+      requestAnimationFrame(animate3D);
+
+      // Parallax smooth camera glide
+      camera3d.position.x += (mouse3dX * 3.5 - camera3d.position.x) * 0.04;
+      camera3d.position.y += (-mouse3dY * 3.0 - camera3d.position.y) * 0.04;
+      camera3d.lookAt(0, 0, 0);
+
+      // Rotate Rangoli rings
+      if (rangoliGroup) {
+        rangoliGroup.rotation.z += 0.0015;
+        rangoliGroup.children.forEach((child) => {
+          if (child.userData && child.userData.speed) {
+            child.rotation.z += child.userData.speed;
+          }
+        });
+      }
+
+      // Update 3D Sky Lanterns
+      floatingLanterns.forEach((lantern) => {
+        lantern.position.y += lantern.userData.speedY;
+        lantern.userData.swayAngle += lantern.userData.swaySpeed;
+        lantern.position.x += Math.sin(lantern.userData.swayAngle) * 0.035;
+        lantern.rotation.y += lantern.userData.rotSpeed;
+
+        // Reset if float out of top bound
+        if (lantern.position.y > 45) {
+          lantern.position.y = -45;
+          lantern.position.x = (Math.random() - 0.5) * 80;
+        }
+      });
+
+      // Gentle stardust rotation
+      if (stardustParticles) {
+        stardustParticles.rotation.y += 0.0006;
+        stardustParticles.rotation.x += 0.0003;
+      }
+
+      renderer3d.render(scene3d, camera3d);
+    }
+
+    /* -------------------------------------------------------------
+     * 3. SPARKLER (PHULJHADI) CURSOR TRAIL ENGINE
+     * ------------------------------------------------------------- */
+    const sparklerCanvas = document.getElementById('sparklerCanvas');
+    const sCtx = sparklerCanvas.getContext('2d');
+    let sparklerParticles = [];
+
+    function resizeSparklerCanvas() {
+      sparklerCanvas.width = window.innerWidth;
+      sparklerCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeSparklerCanvas);
+    resizeSparklerCanvas();
+
+    class SparklerEmber {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 3.5 + 0.8;
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed;
+        this.decay = Math.random() * 0.03 + 0.02;
+        this.alpha = 1;
+        this.size = Math.random() * 2.2 + 0.8;
+        this.color = ['#ffffff', '#ffd666', '#faad14', '#ff7a45'][Math.floor(Math.random() * 4)];
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.08; // subtle spark gravity
+        this.alpha -= this.decay;
+      }
+      draw(c) {
+        c.save();
+        c.globalAlpha = Math.max(0, this.alpha);
+        c.fillStyle = this.color;
+        c.shadowColor = '#faad14';
+        c.shadowBlur = 8;
+        c.beginPath();
+        c.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        c.fill();
+        c.restore();
+      }
+    }
+
+    function addSparklerEmber(x, y, count = 3) {
+      for (let i = 0; i < count; i++) {
+        sparklerParticles.push(new SparklerEmber(x, y));
+      }
+    }
+
+    // Phuljhadi trail only emits after celebration is unlocked
+    window.addEventListener('pointermove', (e) => {
+      if (!isCelebrationUnlocked) return;
+      addSparklerEmber(e.clientX, e.clientY, 3);
+    });
+
+    function renderSparklers() {
+      sCtx.clearRect(0, 0, sparklerCanvas.width, sparklerCanvas.height);
+      for (let i = sparklerParticles.length - 1; i >= 0; i--) {
+        const sp = sparklerParticles[i];
+        sp.update();
+        sp.draw(sCtx);
+        if (sp.alpha <= 0) sparklerParticles.splice(i, 1);
+      }
+      requestAnimationFrame(renderSparklers);
+    }
+    renderSparklers();
+
+    /* -------------------------------------------------------------
+     * 4. FULLSCREEN CANVAS FIREWORKS ENGINE
+     * ------------------------------------------------------------- */
+    const canvas = document.getElementById('fireworksCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let rockets = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const PALETTES = [
+      ['#ffd666', '#faad14', '#ffffff', '#ff7a45'],
+      ['#ff4d4f', '#ffd666', '#ffffff', '#ff7875'],
+      ['#52c41a', '#b7eb8f', '#ffe58f', '#ffffff'],
+      ['#40a9ff', '#91d5ff', '#ffd666', '#ffffff'],
+      ['#f759ab', '#ffd666', '#ffffff', '#ff85c0'],
+      ['#d3adf7', '#b37feb', '#ffffff', '#ffd666']
+    ];
+
+    const CRACKER_TYPES = ['peony', 'willow', 'ring', 'palm', 'heart'];
+
+    class MultiTypeParticle {
+      constructor(x, y, color, type) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.type = type;
+        this.alpha = 1;
+        this.friction = 0.96;
+        this.gravity = 0.05;
+        this.decay = Math.random() * 0.015 + 0.012;
+        this.size = Math.random() * 2.2 + 1.2;
+
+        if (type === 'peony') {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 6.5 + 1.5;
+          this.vx = Math.cos(angle) * speed;
+          this.vy = Math.sin(angle) * speed;
+        } else if (type === 'willow') {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 4.5 + 1.0;
+          this.vx = Math.cos(angle) * speed;
+          this.vy = Math.sin(angle) * speed;
+          this.decay = Math.random() * 0.007 + 0.005;
+          this.gravity = 0.085;
+          this.friction = 0.975;
+          this.size = 1.6;
+        } else if (type === 'ring') {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 5.2 + Math.random() * 0.6;
+          this.vx = Math.cos(angle) * speed;
+          this.vy = Math.sin(angle) * (speed * 0.45);
+          this.gravity = 0.02;
+          this.decay = 0.014;
+        } else if (type === 'palm') {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 7.5 + 2.0;
+          this.vx = Math.cos(angle) * speed;
+          this.vy = Math.sin(angle) * speed;
+          this.friction = 0.94;
+          this.isStrobe = true;
+        } else if (type === 'heart') {
+          const t = Math.random() * Math.PI * 2;
+          const scale = 0.28 + Math.random() * 0.08;
+          this.vx = (16 * Math.pow(Math.sin(t), 3)) * scale;
+          this.vy = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t)) * scale;
+          this.gravity = 0.025;
+          this.friction = 0.96;
+        }
+      }
+
+      update() {
+        this.vx *= this.friction;
+        this.vy *= this.friction;
+        this.vy += this.gravity;
+        this.x += this.vx;
+        this.y += this.vy;
+        this.alpha -= this.decay;
+      }
+
+      draw(c) {
+        c.save();
+        let displayAlpha = Math.max(0, this.alpha);
+        if (this.isStrobe && Math.random() < 0.35) {
+          displayAlpha = 0.2;
+        }
+        c.globalAlpha = displayAlpha;
+        c.fillStyle = this.color;
+        c.shadowColor = this.color;
+        c.shadowBlur = this.type === 'willow' ? 8 : 6;
+        c.beginPath();
+        c.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        c.fill();
+        c.restore();
+      }
+    }
+
+    function explodeMultiType(x, y, palette, type) {
+      playCrackerAudio(type);
+      const count = type === 'willow' ? 85 : (type === 'heart' ? 70 : 60);
+      for (let i = 0; i < count; i++) {
+        const color = type === 'willow' ? '#ffd666' : palette[Math.floor(Math.random() * palette.length)];
+        particles.push(new MultiTypeParticle(x, y, color, type));
+      }
+    }
+
+    class Rocket {
+      constructor(sx, sy, tx, ty, colors, type) {
+        this.x = sx;
+        this.y = sy;
+        this.tx = tx;
+        this.ty = ty;
+        this.colors = colors;
+        this.type = type || CRACKER_TYPES[Math.floor(Math.random() * CRACKER_TYPES.length)];
+        const dist = Math.hypot(tx - sx, ty - sy);
+        const speed = 15;
+        this.vx = ((tx - sx) / dist) * speed;
+        this.vy = ((ty - sy) / dist) * speed;
+        this.done = false;
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.y <= this.ty || Math.hypot(this.tx - this.x, this.ty - this.y) < 15) {
+          this.done = true;
+          explodeMultiType(this.x, this.y, this.colors, this.type);
+        }
+      }
+
+      draw(c) {
+        c.save();
+        c.fillStyle = '#ffe58f';
+        c.shadowColor = '#faad14';
+        c.shadowBlur = 8;
+        c.beginPath();
+        c.arc(this.x, this.y, 2.5, 0, Math.PI * 2);
+        c.fill();
+        c.restore();
+      }
+    }
+
+    function launchRocketTo(tx, ty, specificType = null) {
+      const palette = PALETTES[Math.floor(Math.random() * PALETTES.length)];
+      const type = specificType || CRACKER_TYPES[Math.floor(Math.random() * CRACKER_TYPES.length)];
+      const sx = tx + (Math.random() * 80 - 40);
+      const sy = window.innerHeight + 10;
+      rockets.push(new Rocket(sx, sy, tx, ty, palette, type));
+    }
+
+    function renderLoop() {
+      ctx.fillStyle = 'rgba(5, 5, 7, 0.22)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = rockets.length - 1; i >= 0; i--) {
+        const r = rockets[i];
+        r.update();
+        r.draw(ctx);
+        if (r.done) rockets.splice(i, 1);
+      }
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.update();
+        p.draw(ctx);
+        if (p.alpha <= 0) particles.splice(i, 1);
+      }
+
+      requestAnimationFrame(renderLoop);
+    }
+
+    // Interactive pointer click: launches cracker, bursts at click point, and auto-chains
+    window.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('button, input, textarea, a, .cursor-pointer')) {
+        return;
+      }
+
+      // Check if celebration is unlocked with name
+      if (!isCelebrationUnlocked) {
+        notifyNameRequired();
+        return;
+      }
+
+      initAudio();
+
+      launchRocketTo(e.clientX, e.clientY);
+
+      const followUpCount = 2 + Math.floor(Math.random() * 2);
+      for (let i = 0; i < followUpCount; i++) {
+        setTimeout(() => {
+          const randX = Math.random() * (window.innerWidth * 0.85) + (window.innerWidth * 0.075);
+          const randY = Math.random() * (window.innerHeight * 0.5) + 60;
+          launchRocketTo(randX, randY);
+        }, 220 * (i + 1) + Math.random() * 120);
+      }
+    });
+
+    // Gentle ambient fireworks only run after entering name
+    setInterval(() => {
+      if (!isCelebrationUnlocked) return;
+      if (document.visibilityState === 'visible' && Math.random() > 0.4) {
+        const x = Math.random() * (window.innerWidth * 0.8) + (window.innerWidth * 0.1);
+        const y = Math.random() * (window.innerHeight * 0.45) + 50;
+        launchRocketTo(x, y);
+      }
+    }, 2800);
+
+    /* -------------------------------------------------------------
+     * 5. GRAND FINALE (1000-WALA LADI) BARRAGE
+     * ------------------------------------------------------------- */
+    function triggerGrandFinale() {
+      if (!isCelebrationUnlocked) {
+        notifyNameRequired();
+        return;
+      }
+
+      initAudio();
+      showToast('💥 Grand Finale 1000-Ladi Ignited!');
+
+      // Golden celebratory burst of confetti
+      if (window.confetti) {
+        confetti({
+          particleCount: 80,
+          spread: 100,
+          origin: { y: 0.6 },
+          colors: ['#ffd666', '#faad14', '#ff4d4f', '#ffffff']
+        });
+      }
+
+      // Rapid-fire sequence of 18 crackers over 4.5 seconds
+      for (let i = 0; i < 20; i++) {
+        setTimeout(() => {
+          const x = Math.random() * (window.innerWidth * 0.86) + (window.innerWidth * 0.07);
+          const y = Math.random() * (window.innerHeight * 0.52) + 40;
+          const type = CRACKER_TYPES[i % CRACKER_TYPES.length];
+          launchRocketTo(x, y, type);
+        }, i * 200 + Math.random() * 80);
+      }
+    }
+
+    /* -------------------------------------------------------------
+     * 6. INTERACTIVE DIYAS (TOUCH/CLICK TO TOGGLE LIGHT)
+     * ------------------------------------------------------------- */
+    function toggleInteractiveDiya(elem, event) {
+      if (event) event.stopPropagation();
+      initAudio();
+
+      const flame = elem.querySelector('.diya-flame');
+      const halo = elem.querySelector('.flame-halo');
+      if (!flame) return;
+
+      const isExtinguished = flame.classList.toggle('unlit');
+      if (halo) halo.classList.toggle('unlit', isExtinguished);
+
+      playDiyaSound();
+
+      if (!isExtinguished) {
+        // Burst sparklers around the relit diya
+        const rect = elem.getBoundingClientRect();
+        addSparklerEmber(rect.left + rect.width / 2, rect.top, 25);
+        showToast('Diya ignited with sacred light ✨');
+      } else {
+        showToast('Diya extinguished. Tap again to light it!');
+      }
+    }
+
+    /* -------------------------------------------------------------
+     * 7. BLESSING SHUFFLER & SHARE LINK
+     * ------------------------------------------------------------- */
+    const BLESSINGS = [
+      "May the divine glow of millions of diyas illuminate your path to prosperity, happiness, and peace. Wishing you and your loved ones a joyful, safe, and sparkling Festival of Lights!",
+      "May Goddess Lakshmi bless your home with boundless wealth, radiant health, and endless warmth. Happy Diwali!",
+      "As diyas light up every corner of the earth, may light always triumph over darkness and wisdom over ignorance in your life.",
+      "Wishing you 365 days of sparkle, laughter, joy, and victory. Have a joyous and prosperous Deepavali!",
+      "May the sweet melody of festive chants and the warmth of golden lamps bring harmony and eternal bliss to your family."
+    ];
+    let blessingIndex = 0;
+
+    function shuffleBlessing(event) {
+      if (event) event.stopPropagation();
+      initAudio();
+      blessingIndex = (blessingIndex + 1) % BLESSINGS.length;
+      const blessingElem = document.getElementById('cardBlessingText');
+      blessingElem.style.opacity = 0;
+      setTimeout(() => {
+        blessingElem.innerText = BLESSINGS[blessingIndex];
+        blessingElem.style.opacity = 1;
+      }, 200);
+      showToast('Wishes refreshed ✨');
+    }
+
+    function copyPersonalizedLink(event) {
+      if (event) event.stopPropagation();
+      const name = document.getElementById('userNameInput').value.trim() || 'Friend';
+      const shareUrl = `${window.location.origin}${window.location.pathname}?name=${encodeURIComponent(name)}`;
+
+      const input = document.createElement('input');
+      input.value = shareUrl;
+      document.body.appendChild(input);
+      input.select();
+      try {
+        document.execCommand('copy');
+        showToast('Personalized wishing link copied! 📋');
+      } catch (err) {
+        showToast('Could not copy link');
+      }
+      document.body.removeChild(input);
+    }
+
+    /* -------------------------------------------------------------
+     * 8. CELEBRATION FLOW & URL PARAM SUPPORT
+     * ------------------------------------------------------------- */
+    function notifyNameRequired() {
+      const now = Date.now();
+      if (now - lastToastTime > 1800) {
+        lastToastTime = now;
+        showToast('✨ Please enter your name first to unlock phuljhadies and crackers!');
+        const input = document.getElementById('userNameInput');
+        if (input) {
+          input.focus();
+          input.classList.add('ring-2', 'ring-amber-400');
+          setTimeout(() => input.classList.remove('ring-2', 'ring-amber-400'), 1500);
+        }
+      }
+    }
+
+    function handleStartCelebration(event) {
+      if (event) event.preventDefault();
+      initAudio();
+
+      const nameInput = document.getElementById('userNameInput');
+      const name = nameInput.value.trim() || 'Dear Friend';
+
+      isCelebrationUnlocked = true;
+
+      document.getElementById('cardTitle').innerText = `Happy Diwali, ${name}! ✨`;
+
+      const stepInput = document.getElementById('stepInputCard');
+      const stepCard = document.getElementById('stepGreetingCard');
+
+      stepInput.classList.add('opacity-0', 'scale-95');
+      setTimeout(() => {
+        stepInput.classList.add('hidden');
+        stepCard.classList.remove('hidden');
+        setTimeout(() => {
+          stepCard.classList.remove('opacity-0', 'scale-95');
+        }, 50);
+
+        triggerCrackerShow();
+      }, 400);
+    }
+
+    function triggerCrackerShow() {
+      initAudio();
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight * 0.35;
+
+      launchRocketTo(centerX, centerY, 'heart');
+      setTimeout(() => launchRocketTo(centerX - 180, centerY + 30, 'willow'), 200);
+      setTimeout(() => launchRocketTo(centerX + 180, centerY + 20, 'ring'), 420);
+      setTimeout(() => launchRocketTo(centerX, centerY - 60, 'palm'), 650);
+      setTimeout(() => launchRocketTo(centerX - 90, centerY + 80, 'peony'), 850);
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastMessage');
+      document.getElementById('toastText').innerText = msg;
+      toast.classList.remove('translate-y-24', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 2600);
+    }
+
+    // Auto-fill from URL param if available (?name=...)
+    window.onload = function() {
+      lucide.createIcons();
+      init3DScene();
+      animate3D();
+      renderLoop();
+
+      const params = new URLSearchParams(window.location.search);
+      const urlName = params.get('name');
+      if (urlName) {
+        document.getElementById('userNameInput').value = urlName;
+        handleStartCelebration();
+      }
+    };
+  </script>
+</body>
+</html>
